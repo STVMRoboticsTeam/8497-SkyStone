@@ -33,6 +33,7 @@ public class SensorTest1 extends LinearOpMode {
     private DcMotor motorFR1;
     private DcMotor motorBL2;
     private DcMotor motorBR3;
+    private MecanumControl mec;
 
     private ElapsedTime timer1 = new ElapsedTime();
 
@@ -48,6 +49,8 @@ public class SensorTest1 extends LinearOpMode {
         motorFR1 = hardwareMap.dcMotor.get("1");
         motorBL2 = hardwareMap.dcMotor.get("2");
         motorBR3 = hardwareMap.dcMotor.get("3");
+        mec = new MecanumControl(motorFL0, motorFR1, motorBL2, motorBR3, telemetry);
+
 
         // GYRO Init and Calibration
         sensorGyro = hardwareMap.get(ModernRoboticsI2cGyro.class, "gyro");
@@ -107,86 +110,8 @@ public class SensorTest1 extends LinearOpMode {
             }
 
             telemetry.addLine("Velocity").addData("X", x).addData("Y", y);
-            setVelocity(x, y, 0);
+            mec.setVelocity(x, y, 0);
         }
-    }
-
-    /**
-     *
-     * @param x speed in the 90/270 degrees direction. -1 to 1
-     * @param y speed in the 0/180 degrees direction. -1 to 1
-     * @param rot rotational speed, positive means positive degrees.
-     */
-    private void setVelocity(float x, float y, float rot) {
-        float frFin = 0f;
-        float flFin = 0f;
-        float brFin = 0f;
-        float blFin = 0f;
-
-        x = Range.clip(x, -1, 1);
-        y = Range.clip(y, -1, 1);
-        rot = Range.clip(rot / 360, -1, 1);
-
-        /*
-         * fl = x + y + rot
-         * fr = x - y - rot
-         * bl = x - y + rot
-         * br = x + y - rot
-         *
-         * final values need scaled // not clipped
-         * scale rotation less than position
-         */
-        float curScale = 1f;
-        float scale = 1f;
-
-        // FL x + y + rot
-        if(x + y + rot > 1f) {
-            curScale = (1 - rot) / (x + y);
-        } else if(x + y + rot < -1f) {
-            curScale = (rot - 1) / (x + y);
-        }
-        if(curScale < scale) scale = curScale;
-
-        // FR x - y - rot
-        if(x - y - rot > 1f) {
-            curScale = (1 + rot) / (x - y);
-        } else if(x - y - rot < -1f) {
-            curScale = (-rot - 1) / (x - y);
-        }
-        if(curScale < scale) scale = curScale;
-
-        // BL x - y + rot
-        if(x - y + rot > 1f) {
-            curScale = (1 - rot) / (x - y);
-        } else if(x - y + rot < -1f) {
-            curScale = (rot - 1) / (x - y);
-        }
-        if(curScale < scale) scale = curScale;
-
-        // BR x + y - rot
-        if(x + y - rot > 1f) {
-            curScale = (1 + rot) / (x + y);
-        } else if(x + y - rot < -1f) {
-            curScale = (-rot - 1) / (x + y);
-        }
-        if(curScale < scale) scale = curScale;
-
-        flFin = (x + y) * scale + rot;
-        frFin = (x - y) * scale - rot;
-        blFin = (x - y) * scale + rot;
-        brFin = (x + y) * scale - rot;
-
-        telemetry.addLine("Motors")
-                .addData("FL", flFin)
-                .addData("FR", frFin)
-                .addData("BL", blFin)
-                .addData("BR", brFin);
-        telemetry.update();
-
-        motorFL0.setPower(flFin);
-        motorFR1.setPower(-frFin);
-        motorBL2.setPower(blFin);
-        motorBR3.setPower(-brFin);
     }
 
 }
