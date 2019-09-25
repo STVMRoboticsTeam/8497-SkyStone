@@ -2,6 +2,7 @@ package net.camfeezel.robotics;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -25,7 +26,7 @@ public class SensorTest1 extends LinearOpMode {
     private Rev2mDistanceSensor sensorDistance18;
     private Rev2mDistanceSensor sensorDistance27;
 
-    private ColorSensor sensorColorDown;
+    private RevColorSensorV3 sensorColorDown;
 
     private ModernRoboticsI2cGyro sensorGyro;
 
@@ -43,7 +44,7 @@ public class SensorTest1 extends LinearOpMode {
         sensorDistance18 = hardwareMap.get(Rev2mDistanceSensor.class, "dist18");
         sensorDistance27 = hardwareMap.get(Rev2mDistanceSensor.class, "dist27");
 
-        sensorColorDown = hardwareMap.colorSensor.get("colorDown");
+        sensorColorDown = hardwareMap.get(RevColorSensorV3.class, "colorDown");
 
         motorFL0 = hardwareMap.dcMotor.get("0");
         motorFR1 = hardwareMap.dcMotor.get("1");
@@ -75,7 +76,7 @@ public class SensorTest1 extends LinearOpMode {
             float zAngle = sensorGyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
             telemetry.addData("Heading", "%3d", sensorGyro.getHeading());
             telemetry.addData("Integ. Z", "%3d", sensorGyro.getIntegratedZValue());
-            telemetry.addData("Angle", "%3d", String.format("%.3f", zAngle));
+            telemetry.addData("Angle", "%s", String.format("%.3f", zAngle));
 
             float cd00 = (float) sensorDistance00.getDistance(DistanceUnit.CM);
             float cd18 = (float) sensorDistance18.getDistance(DistanceUnit.CM);
