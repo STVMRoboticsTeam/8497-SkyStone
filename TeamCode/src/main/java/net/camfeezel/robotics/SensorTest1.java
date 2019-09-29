@@ -81,9 +81,9 @@ public class SensorTest1 extends LinearOpMode {
             float cd00 = (float) sensorDistance00.getDistance(DistanceUnit.CM);
             float cd18 = (float) sensorDistance18.getDistance(DistanceUnit.CM);
             float cd27 = (float) sensorDistance27.getDistance(DistanceUnit.CM);
-            telemetry.addData("Distance-000", "%d cm", cd00);
-            telemetry.addData("Distance-180", "%d cm", cd18);
-            telemetry.addData("Distance-270", "%d cm", cd27);
+            telemetry.addData("Distance-000", "%f cm", cd00);
+            telemetry.addData("Distance-180", "%f cm", cd18);
+            telemetry.addData("Distance-270", "%f cm", cd27);
 
             telemetry.addLine("Color")
                     .addData("R", sensorColorDown.red())
