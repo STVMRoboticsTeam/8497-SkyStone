@@ -91,6 +91,7 @@ public class SensorTest1 extends LinearOpMode {
         double initialDist27 = sensorDistance27.getDistance(DistanceUnit.CM);
 		angles = sensorGyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 		float initialHeading = angles.firstAngle;
+		if(initialHeading < 0) initialHeading += 360;
 		while(opModeIsActive()) {
             angles = sensorGyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 			telemetry.addData("Heading", formatAngle(angles.angleUnit, angles.firstAngle));
@@ -126,12 +127,9 @@ public class SensorTest1 extends LinearOpMode {
                 x = 0;
             }
             float rot = 0;
-            if(initialHeading != angles.firstAngle) {
-            	if(angles.firstAngle > initialHeading)
-            		rot = (Math.abs(initialHeading) - Math.abs(angles.firstAngle)) / initialHeading;
-            	else if(angles.firstAngle < initialHeading)
-					rot = (Math.abs(angles.firstAngle) - Math.abs(initialHeading)) / initialHeading;
-			}
+            float ang = angles.firstAngle;
+            if(ang < 0) ang += 360;
+            rot = (initialHeading - ang) / initialHeading;
             telemetry.addLine("Velocity").addData("X", x).addData("Y", y);
             mec.setVelocity(x, y, rot);
 			telemetry.update();
