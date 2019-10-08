@@ -1,5 +1,7 @@
 package net.camfeezel.robotics;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cCompassSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
@@ -14,10 +16,17 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+
+import java.util.Locale;
 
 @Autonomous(group = "Sensor Tests", name = "01-Distance")
 public class SensorTest1 extends LinearOpMode {
@@ -28,7 +37,8 @@ public class SensorTest1 extends LinearOpMode {
 
     private RevColorSensorV3 sensorColorDown;
 
-    private ModernRoboticsI2cGyro sensorGyro;
+    private BNO055IMU sensorGyro;
+	private Orientation angles = new Orientation();
 
     private DcMotor motorFL0;
     private DcMotor motorFR1;
@@ -54,29 +64,36 @@ public class SensorTest1 extends LinearOpMode {
 
 
         // GYRO Init and Calibration
-        sensorGyro = hardwareMap.get(ModernRoboticsI2cGyro.class, "gyro");
+		BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+		parameters.mode                = BNO055IMU.SensorMode.IMU;
+		parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+		parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+		parameters.loggingEnabled      = false;
+
+        sensorGyro = hardwareMap.get(BNO055IMU.class, "imu");
         telemetry.log().add("DO NOT MOVE ROBOT! Gyro Calibrating...");
-        sensorGyro.calibrate();
+        sensorGyro.initialize(parameters);
         timer1.reset();
-        while (!isStopRequested() && sensorGyro.isCalibrating())  {
-            telemetry.addData("Gyro Calibration", "%s", Math.round(timer1.seconds())%2==0 ? "|.." : "..|");
-            telemetry.update();
+        while (!isStopRequested() && !sensorGyro.isGyroCalibrated())  {
             sleep(50);
+            idle();
         }
-        telemetry.log().clear(); telemetry.log().add("Gyro Calibrated.");
+        telemetry.log().clear();
+        telemetry.log().add("Gyro Calibration status (" + timer1.seconds() + "s) " + sensorGyro.getCalibrationStatus().toString());
         telemetry.clear(); telemetry.update();
 
         waitForStart();
         telemetry.log().clear();
-        double initialDist00 = sensorDistance00.getDistance(DistanceUnit.CM);
+		Acceleration gravity = new Acceleration();
+		sensorGyro.startAccelerationIntegration(new Position(), new Velocity(), 1000);
+		double initialDist00 = sensorDistance00.getDistance(DistanceUnit.CM);
         double initialDist18 = sensorDistance18.getDistance(DistanceUnit.CM);
         double initialDist27 = sensorDistance27.getDistance(DistanceUnit.CM);
-        double initialHeading = sensorGyro.getHeading();
-        while(opModeIsActive()) {
-            float zAngle = sensorGyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-            telemetry.addData("Heading", "%3d", sensorGyro.getHeading());
-            telemetry.addData("Integ. Z", "%3d", sensorGyro.getIntegratedZValue());
-            telemetry.addData("Angle", "%s", String.format("%.3f", zAngle));
+		angles = sensorGyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+		float initialHeading = angles.firstAngle;
+		while(opModeIsActive()) {
+            angles = sensorGyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+			telemetry.addData("Heading", formatAngle(angles.angleUnit, angles.firstAngle));
 
             float cd00 = (float) sensorDistance00.getDistance(DistanceUnit.CM);
             float cd18 = (float) sensorDistance18.getDistance(DistanceUnit.CM);
@@ -89,30 +106,44 @@ public class SensorTest1 extends LinearOpMode {
                     .addData("R", sensorColorDown.red())
                     .addData("G", sensorColorDown.green())
                     .addData("B", sensorColorDown.blue());
-            telemetry.update();
 
             float x;
             float y;
 
-            if(cd00 > 10.5) {
-                y = Range.clip((cd00 - 8) / 10, 0, 1);
-            } else if(cd00 < 9.5) {
-                y = Range.clip((cd00 - 12) / 10, -1, 0);
+            if(cd00 > 12) {
+                y = Range.clip((cd00 - 10) / 10, 0, 1);
+            } else if(cd00 < 8) {
+                y = Range.clip((cd00 - 10) / 10, -1, 0);
             } else {
                 y = 0;
             }
 
-            if(cd27 > 10.5) {
-                x = Range.clip((cd27 - 8) / 10, 0, 1);
-            } else if(cd27 < 9.5) {
-                x = Range.clip((cd27 - 12) / 10, -1, 0);
+            if(cd27 > 12) {
+                x = Range.clip((cd27 - 10) / 10, 0, 1);
+            } else if(cd27 < 8) {
+                x = Range.clip((cd27 - 10) / 10, -1, 0);
             } else {
                 x = 0;
             }
-
+            float rot = 0;
+            if(initialHeading != angles.firstAngle) {
+            	if(angles.firstAngle > initialHeading)
+            		rot = (Math.abs(initialHeading) - Math.abs(angles.firstAngle)) / initialHeading;
+            	else if(angles.firstAngle < initialHeading)
+					rot = (Math.abs(angles.firstAngle) - Math.abs(initialHeading)) / initialHeading;
+			}
             telemetry.addLine("Velocity").addData("X", x).addData("Y", y);
-            mec.setVelocity(x, y, 0);
+            mec.setVelocity(x, y, rot);
+			telemetry.update();
         }
     }
+
+	String formatAngle(AngleUnit angleUnit, double angle) {
+		return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+	}
+
+	String formatDegrees(double degrees){
+		return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+	}
 
 }

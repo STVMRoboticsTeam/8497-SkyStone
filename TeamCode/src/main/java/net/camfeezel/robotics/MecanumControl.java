@@ -49,23 +49,7 @@ public class MecanumControl {
         float curScale = 1f;
         float scale = 1f;
 
-        // FL x + y + rot
-        if(x + y + rot > 1f) {
-            curScale = (1 - rot) / (x + y);
-        } else if(x + y + rot < -1f) {
-            curScale = (rot - 1) / (x + y);
-        }
-        if(curScale < scale) scale = curScale;
-
-        // FR x - y - rot
-        if(x - y - rot > 1f) {
-            curScale = (1 + rot) / (x - y);
-        } else if(x - y - rot < -1f) {
-            curScale = (-rot - 1) / (x - y);
-        }
-        if(curScale < scale) scale = curScale;
-
-        // BL x - y + rot
+        // FL x - y + rot
         if(x - y + rot > 1f) {
             curScale = (1 - rot) / (x - y);
         } else if(x - y + rot < -1f) {
@@ -73,7 +57,7 @@ public class MecanumControl {
         }
         if(curScale < scale) scale = curScale;
 
-        // BR x + y - rot
+        // FR x + y - rot
         if(x + y - rot > 1f) {
             curScale = (1 + rot) / (x + y);
         } else if(x + y - rot < -1f) {
@@ -81,17 +65,32 @@ public class MecanumControl {
         }
         if(curScale < scale) scale = curScale;
 
-        flFin = (x + y) * scale + rot;
-        frFin = (x - y) * scale - rot;
-        blFin = (x - y) * scale + rot;
-        brFin = (x + y) * scale - rot;
+        // BL x + y + rot
+        if(x + y + rot > 1f) {
+            curScale = (1 - rot) / (x + y);
+        } else if(x + y + rot < -1f) {
+            curScale = (rot - 1) / (x + y);
+        }
+        if(curScale < scale) scale = curScale;
+
+        // BR x - y - rot
+        if(x - y - rot > 1f) {
+            curScale = (1 + rot) / (x - y);
+        } else if(x - y - rot < -1f) {
+            curScale = (-rot - 1) / (x - y);
+        }
+        if(curScale < scale) scale = curScale;
+
+        flFin = (x - y) * scale + rot;
+        frFin = (x + y) * scale - rot;
+        blFin = (x + y) * scale + rot;
+        brFin = (x - y) * scale - rot;
 
         telemetry.addLine("Motors")
                 .addData("FL", flFin)
                 .addData("FR", frFin)
                 .addData("BL", blFin)
                 .addData("BR", brFin);
-        telemetry.update();
 
         motorFL0.setPower(flFin);
         motorFR1.setPower(-frFin);
