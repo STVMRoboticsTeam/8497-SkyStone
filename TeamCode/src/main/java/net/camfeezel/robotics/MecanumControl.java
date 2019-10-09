@@ -25,7 +25,7 @@ public class MecanumControl {
      *
      * @param x speed in the 90/270 degrees direction. -1 to 1
      * @param y speed in the 0/180 degrees direction. -1 to 1
-     * @param rot rotational speed, positive means positive degrees.
+     * @param rot rotational speed -180 to 180, positive means positive degrees.
      */
     public void setVelocity(float x, float y, float rot) {
         float frFin = 0f;
@@ -35,7 +35,7 @@ public class MecanumControl {
 
         x = Range.clip(x, -1, 1);
         y = Range.clip(y, -1, 1);
-        rot = Range.clip(rot / 360, -1, 1);
+        rot = Range.clip((rot / 180) + (Math.signum(rot) * 0.085f), -1, 1);
 
         /*
          * fl = x + y + rot
@@ -88,9 +88,9 @@ public class MecanumControl {
 
         telemetry.addLine("Motors")
                 .addData("FL", flFin)
-                .addData("FR", frFin)
+                .addData("FR", -frFin)
                 .addData("BL", blFin)
-                .addData("BR", brFin);
+                .addData("BR", -brFin);
 
         motorFL0.setPower(flFin);
         motorFR1.setPower(-frFin);
