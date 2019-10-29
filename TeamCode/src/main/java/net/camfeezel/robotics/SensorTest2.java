@@ -1,23 +1,15 @@
 package net.camfeezel.robotics;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cCompassSensor;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -29,8 +21,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 import java.util.Locale;
 
-@Autonomous(group = "Sensor Tests", name = "01-Distance")
-public class SensorTest1 extends LinearOpMode {
+@Autonomous(group = "Sensor Tests", name = "02-Distance")
+public class SensorTest2 extends LinearOpMode {
 
     private Rev2mDistanceSensor sensorDistance00;
     private Rev2mDistanceSensor sensorDistance18;
@@ -62,9 +54,9 @@ public class SensorTest1 extends LinearOpMode {
         motorBL2 = hardwareMap.dcMotor.get("2");
         motorBR3 = hardwareMap.dcMotor.get("3");
         mec = new MecanumControl(motorFL0, motorFR1, motorBL2, motorBR3, telemetry);
+		motorBR3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-
-        // GYRO Init and Calibration
+		// GYRO Init and Calibration
 		BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 		parameters.mode                = BNO055IMU.SensorMode.IMU;
 		parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -92,15 +84,12 @@ public class SensorTest1 extends LinearOpMode {
         double initialDist27 = sensorDistance27.getDistance(DistanceUnit.CM);
 		angles = sensorGyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-		boolean searching = false;
-		boolean yOnPoint = false;
-		int curBlock = 0;
-		int skyBlock = 0;
-		int cmTarget = 94;
+		motorBR3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		int cmTarget = 10;
 
 		while(opModeIsActive()) {
             angles = sensorGyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-			telemetry.addData("Heading", formatAngle(angles.angleUnit, angles.firstAngle));
+//			telemetry.addData("Heading", formatAngle(angles.angleUnit, angles.firstAngle));
 
 
 			float x = 0;
@@ -110,62 +99,47 @@ public class SensorTest1 extends LinearOpMode {
             float cd18 = (float) sensorDistance18.getDistance(DistanceUnit.CM);
             float cd27 = (float) sensorDistance27.getDistance(DistanceUnit.CM);
             telemetry.addData("Distance-000", "%f cm", cd00);
-            telemetry.addData("Distance-180", "%f cm", cd18);
-            telemetry.addData("Distance-270", "%f cm", cd27);
+//            telemetry.addData("Distance-180", "%f cm", cd18);
+//            telemetry.addData("Distance-270", "%f cm", cd27);
 
 
 
 
-            if(cd00 > 8) {
-            	yOnPoint = false;
-                y = Range.clip((cd00 - 6) / 25, 0, 1);
-            } else if(cd00 < 4) {
-				yOnPoint = false;
-                y = Range.clip((cd00 - 6) / 25, -1, 0);
+            if(cd00 > cmTarget+2) {
+                y = Range.clip((cd00 - cmTarget) / 25, 0, 1);
+            } else if(cd00 < cmTarget-2) {
+                y = Range.clip((cd00 - cmTarget) / 25, -1, 0);
             } else {
                 y = 0;
-                yOnPoint = true;
             }
 			NormalizedRGBA colors = sensorColor00.getNormalizedColors();
             telemetry.addLine("Color")
-					.addData("R", colors.red)
-					.addData("G", colors.green)
-					.addData("B", colors.blue);
+					.addData("R", "%03f", colors.red)
+					.addData("G", "%03f", colors.green)
+					.addData("B", "%03f", colors.blue);
 
 			if (cd27 > cmTarget+2) {
 				x = Range.clip((cd27 - cmTarget) / 25, 0, 1);
 			} else if (cd27 < cmTarget-2) {
 				x = Range.clip((cd27 - cmTarget) / 25, -1, 0);
 			} else {
-				searching = true;
 				x = 0;
 			}
-			if(searching && yOnPoint) {
-				if(colors.red > 0.3f && colors.green > 0.3f) {
-					cmTarget -= (++curBlock)*20;
-					searching = false;
-				} else {
-					skyBlock = 6-curBlock;
-				}
-			}
-			if(curBlock == 6) {
-				telemetry.clear();
-				telemetry.addLine("No SkyStones");
-				telemetry.update();
-				mec.setVelocity(0,0,0);
-				while(opModeIsActive());
-			}
-			if(skyBlock != 0) {
-				telemetry.clear();
-				telemetry.addData("SkyStone Found", skyBlock);
-				telemetry.update();
-				mec.setVelocity(0,0,0);
-				while(opModeIsActive());			}
+
+			// TODO this is temp
+			x = 0;
+
+			telemetry.addLine("Encoder").addData("BR", ((motorBR3.getCurrentPosition() / 1000f)*(10.16f*Math.PI)) + "cm");
+			telemetry.addLine("Encoder 1000").addData("BR", motorBR3.getCurrentPosition());
+			telemetry.addLine("Optical").addData("00", initialDist00 - cd00);
+
 
 
             float rot = 0;
             float ang = angles.firstAngle;
             rot = (ang - initialHeading);
+            // TODO this is temp
+			rot = 0;
             telemetry.addLine("Velocity").addData("X", x).addData("Y", y).addData("ROT", rot);
             mec.setVelocity(x, y, rot);
 			telemetry.update();
