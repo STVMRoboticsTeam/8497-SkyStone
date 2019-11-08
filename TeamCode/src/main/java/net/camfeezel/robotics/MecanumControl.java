@@ -93,8 +93,8 @@ public class MecanumControl {
 //                .addData("BR", -brFin);
 
         motorFL0.setPower(flFin);
-        motorFR1.setPower(-frFin);
-        motorBL2.setPower(blFin);
+        motorFR1.setPower(frFin);
+        motorBL2.setPower(-blFin);
         motorBR3.setPower(-brFin);
     }
 
