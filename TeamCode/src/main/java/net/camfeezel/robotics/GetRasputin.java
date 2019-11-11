@@ -33,8 +33,8 @@ public class GetRasputin extends LinearOpMode {
 			float y = 0;
 			float rot = 0;
 
-			if(Math.abs(lx) > 0.05f) x = lx;
-			if(Math.abs(ly) > 0.05f) y = ly;
+			if(Math.abs(lx) > 0.05f) x = (float) Math.pow(lx, 3);
+			if(Math.abs(ly) > 0.05f) y = (float) Math.pow(ly, 3);
 			if(Math.abs(rx) > 0.05f) rot = rx*180;
 
 			mec.setVelocity(x, y, rot);

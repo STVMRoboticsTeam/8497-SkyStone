@@ -33,9 +33,9 @@ public class MecanumControl {
         float brFin = 0f;
         float blFin = 0f;
 
-        x = Range.clip(x + (Math.signum(x) * 0.1f), -0.9f, 0.9f);
-        y = Range.clip(y + (Math.signum(y) * 0.1f), -0.9f, 0.9f);
-        rot = Range.clip((rot / 180) + (Math.signum(rot) * 0.1f), -1f, 1f);
+        x = Range.clip(x + (Math.signum(x) * 0.06f), -1f, 1f);
+        y = Range.clip(y + (Math.signum(y) * 0.06f), -1f, 1f);
+        rot = Range.clip((rot / 180) + (Math.signum(rot) * 0.06f), -1f, 1f);
 
         /*
          * fl = x + y + rot
@@ -82,8 +82,8 @@ public class MecanumControl {
         if(curScale < scale) scale = curScale;
 
         flFin = (x - y) * scale + rot;
-        frFin = (x + y) * scale - rot;
-        blFin = (x + y) * scale + rot;
+        frFin = (x + y) * scale + rot;
+        blFin = (x + y) * scale - rot;
         brFin = (x - y) * scale - rot;
 
 //        telemetry.addLine("Motors")
