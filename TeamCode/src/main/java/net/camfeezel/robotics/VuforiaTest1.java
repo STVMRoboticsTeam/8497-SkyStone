@@ -225,15 +225,15 @@ public class VuforiaTest1 extends LinearOpMode {
 
 
 		// GYRO Init and Calibration
-		BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-		parameters.mode                = BNO055IMU.SensorMode.IMU;
-		parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-		parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-		parameters.loggingEnabled      = false;
+		BNO055IMU.Parameters bparameters = new BNO055IMU.Parameters();
+		bparameters.mode                = BNO055IMU.SensorMode.IMU;
+		bparameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+		bparameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+		bparameters.loggingEnabled      = false;
 
         sensorGyro = hardwareMap.get(BNO055IMU.class, "imu");
         telemetry.log().add("DO NOT MOVE ROBOT! Gyro Calibrating...");
-        sensorGyro.initialize(parameters);
+        sensorGyro.initialize(bparameters);
         timer1.reset();
         while (!isStopRequested() && !sensorGyro.isGyroCalibrated())  {
             sleep(50);
