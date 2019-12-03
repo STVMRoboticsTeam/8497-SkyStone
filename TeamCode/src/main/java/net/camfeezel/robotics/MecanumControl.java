@@ -13,13 +13,13 @@ public class MecanumControl {
     private DcMotor motorBR3;
     private Telemetry telemetry;
 
-    public MecanumControl(DcMotor motorFL0, DcMotor motorFR1, DcMotor motorBL2, DcMotor motorBR3, Telemetry telemetry) {
-        this.motorFL0 = motorFL0;
-        this.motorFR1 = motorFR1;
-        this.motorBL2 = motorBL2;
-        this.motorBR3 = motorBR3;
-        this.telemetry = telemetry;
-    }
+	public MecanumControl(DcMotor motorFL0, DcMotor motorFR1, DcMotor motorBL2, DcMotor motorBR3, Telemetry telemetry) {
+		this.motorFL0 = motorFL0;
+		this.motorFR1 = motorFR1;
+		this.motorBL2 = motorBL2;
+		this.motorBR3 = motorBR3;
+		this.telemetry = telemetry;
+	}
 
     /**
      *
