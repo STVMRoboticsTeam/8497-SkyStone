@@ -3,6 +3,7 @@ package net.camfeezel.robotics;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "GetRasputin")
 public class GetRasputin extends LinearOpMode {
@@ -12,6 +13,12 @@ public class GetRasputin extends LinearOpMode {
 	private DcMotor motorBL2;
 	private DcMotor motorBR3;
 
+	// Negative: Out
+	private DcMotor motorSlide0;
+	// Positive: Up
+	private DcMotor motorPivot2;
+
+	private Servo servoBlock0;
 
 	@Override
 	public void runOpMode() throws InterruptedException {
@@ -19,6 +26,10 @@ public class GetRasputin extends LinearOpMode {
 		motorFR1 = hardwareMap.dcMotor.get("1");
 		motorBL2 = hardwareMap.dcMotor.get("2");
 		motorBR3 = hardwareMap.dcMotor.get("3");
+
+		motorSlide0 = hardwareMap.dcMotor.get("slide");
+		motorPivot2 = hardwareMap.dcMotor.get("pivot");
+		servoBlock0 = hardwareMap.servo.get("hook");
 
 		MecanumControl mec = new MecanumControl(motorFL0, motorFR1, motorBL2, motorBR3, telemetry);
 
@@ -38,6 +49,17 @@ public class GetRasputin extends LinearOpMode {
 			if(Math.abs(rx) > 0.05f) rot = rx*180;
 
 			mec.setVelocity(x, y, rot);
+
+			float lt = gamepad1.left_trigger;
+			float rt = gamepad1.right_trigger;
+
+			if(lt > 0.02f) motorPivot2.setPower(-lt);
+			if(rt > 0.02f) motorPivot2.setPower(rt);
+			if(gamepad1.a) motorSlide0.setPower(0.3f);
+			else if(gamepad1.y) motorSlide0.setPower(-0.3f);
+			if(gamepad1.x) servoBlock0.setPosition(1f);
+			else if(gamepad1.b) servoBlock0.setPosition(-1f);
+
 		}
 	}
 }
