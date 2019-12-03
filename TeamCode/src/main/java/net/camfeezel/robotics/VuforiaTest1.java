@@ -225,7 +225,6 @@ public class VuforiaTest1 extends LinearOpMode {
 
 
 
-
 		// GYRO Init and Calibration
 		BNO055IMU.Parameters gyroparameters = new BNO055IMU.Parameters();
 		gyroparameters.mode                = BNO055IMU.SensorMode.IMU;
