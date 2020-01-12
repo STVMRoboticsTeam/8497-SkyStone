@@ -6,39 +6,28 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
-@Autonomous(group = "Webcam Tests", name = "VuforiaTest1")
-public class VuforiaTest1 extends LinearOpMode {
+@Autonomous(group = "Webcam Tests", name = "01-Skystone")
+public class VuforiaTest2 extends LinearOpMode {
 
 	private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
 	private static final boolean PHONE_IS_PORTRAIT = false;
@@ -130,8 +119,7 @@ public class VuforiaTest1 extends LinearOpMode {
         waitForStart();
         telemetry.log().clear();
 		sensorGyro.startAccelerationIntegration(new Position(), new Velocity(), 1000);
-		// Start tracking to 10,10
-		mec.resetDistanceTracking();
+
 		while (!isStopRequested()) {
 
 			float x = 0;
@@ -150,7 +138,6 @@ public class VuforiaTest1 extends LinearOpMode {
 					OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
 					if (robotLocationTransform != null) {
 						lastLocation = robotLocationTransform;
-						mec.resetDistanceTracking();
 					}
 					break;
 				}
@@ -170,7 +157,25 @@ public class VuforiaTest1 extends LinearOpMode {
 			else {
 				telemetry.addData("Visible Target", "none");
 			}
-			// TODO compare last location to encoder
+
+			if(lastLocation != null) {
+				mec.setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
+				VectorF translation = lastLocation.getTranslation();
+				float mx = translation.get(0);
+				if(mx > 12 || mx < 8) {
+					float dx = 10 - mx;
+					if(dx > 40) y = 1f;
+					else y = dx/40;
+				}
+				float mz = translation.get(2);
+				if(mz > 12 || mz < 8) {
+					float dz = 10 - mz;
+					if(dz > 30) x = 1f;
+					else x = dz/40;
+				}
+
+			}
+
 			telemetry.addLine("Velocity").addData("X", x).addData("Y", y).addData("ROT", rot);
 			mec.setVelocity(x, y, rot);
 			telemetry.update();

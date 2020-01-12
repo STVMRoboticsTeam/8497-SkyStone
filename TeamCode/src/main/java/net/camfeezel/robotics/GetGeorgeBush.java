@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "GetRasputin")
-public class GetRasputin extends LinearOpMode {
+@TeleOp(name = "GetGeorgeBush")
+public class GetGeorgeBush extends LinearOpMode {
 
 	private DcMotor motorFL0;
 	private DcMotor motorFR1;

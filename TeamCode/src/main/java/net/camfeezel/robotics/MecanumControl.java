@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 
 public class MecanumControl {
 
@@ -11,9 +12,29 @@ public class MecanumControl {
     private DcMotor motorFR1;
     private DcMotor motorBL2;
     private DcMotor motorBR3;
+    private DcMotor motorOdomX;
+    private DcMotor motorOdomY;
     private Telemetry telemetry;
 
-	public MecanumControl(DcMotor motorFL0, DcMotor motorFR1, DcMotor motorBL2, DcMotor motorBR3, Telemetry telemetry) {
+	public MecanumControl(DcMotor motorFL0, DcMotor motorFR1,
+						  DcMotor motorBL2, DcMotor motorBR3,
+						  DcMotor motorOdomX, DcMotor motorOdomY,
+						  Telemetry telemetry) {
+		this.motorFL0 = motorFL0;
+		this.motorFR1 = motorFR1;
+		this.motorBL2 = motorBL2;
+		this.motorBR3 = motorBR3;
+		this.motorOdomX = motorOdomX;
+		this.motorOdomY = motorOdomY;
+		this.telemetry = telemetry;
+
+		this.motorOdomX.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		this.motorOdomY.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+	}
+
+	public MecanumControl(DcMotor motorFL0, DcMotor motorFR1,
+						  DcMotor motorBL2, DcMotor motorBR3,
+						  Telemetry telemetry) {
 		this.motorFL0 = motorFL0;
 		this.motorFR1 = motorFR1;
 		this.motorBL2 = motorBL2;
@@ -97,5 +118,29 @@ public class MecanumControl {
         motorBL2.setPower(-blFin);
         motorBR3.setPower(-brFin);
     }
+
+    public void setDriveMode(DcMotor.RunMode driveMode) {
+    	motorFL0.setMode(driveMode);
+    	motorFR1.setMode(driveMode);
+    	motorBL2.setMode(driveMode);
+    	motorBR3.setMode(driveMode);
+	}
+
+	public static final double WHEEL_CIRCUMFERENCE = Math.PI * 4.0;
+
+	/**
+	 * Total Distance from last call of resetEncoders
+	 */
+	public VectorF getDistanceTravelled() {
+		motorOdomX.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+		motorOdomY.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+		return new VectorF(motorOdomX.getCurrentPosition(), motorOdomY.getCurrentPosition());
+	}
+
+	public void resetDistanceTracking() {
+		motorOdomX.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		motorOdomY.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+	}
 
 }

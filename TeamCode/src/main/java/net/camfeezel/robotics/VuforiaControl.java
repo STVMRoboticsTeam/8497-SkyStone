@@ -23,7 +23,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 public class VuforiaControl {
 
 
-	private static final float mmPerInch        = 25.4f;
+	public static final float mmPerInch        = 25.4f;
 	private static final float mmTargetHeight   = (6) * mmPerInch;
 	private static final float stoneZ = 2.00f * mmPerInch;
 	private static final float bridgeZ = 6.42f * mmPerInch;
@@ -34,8 +34,10 @@ public class VuforiaControl {
 	private static final float halfField = 72 * mmPerInch;
 	private static final float quadField  = 36 * mmPerInch;
 
-	private OpenGLMatrix lastLocation = null;
 	private VuforiaLocalizer vuforia = null;
+
+	private List<VuforiaTrackable> allTrackables;
+	private VuforiaTrackables targetsSkyStone;
 
 	private Telemetry telemetry;
 
@@ -51,7 +53,7 @@ public class VuforiaControl {
 
 		vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-		VuforiaTrackables targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+		targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
 
 		VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
 		stoneTarget.setName("Stone Target");
@@ -80,7 +82,7 @@ public class VuforiaControl {
 		VuforiaTrackable rear2 = targetsSkyStone.get(12);
 		rear2.setName("Rear Perimeter 2");
 
-		List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+		allTrackables = new ArrayList<VuforiaTrackable>();
 		allTrackables.addAll(targetsSkyStone);
 
 		// Set the position of the Stone Target.  Since it's not fixed in position, assume it's at the field origin.
@@ -149,9 +151,22 @@ public class VuforiaControl {
 			((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
 		}
 
+		targetsSkyStone.activate();
+	}
 
+	/**
+	 Only use if multiple re-activations
+	 */
+	public void activate() {
+		targetsSkyStone.activate();
+	}
 
+	public void deactivate() {
+		targetsSkyStone.deactivate();
+	}
 
+	public List<VuforiaTrackable> getAllTrackables() {
+		return allTrackables;
 	}
 
 
