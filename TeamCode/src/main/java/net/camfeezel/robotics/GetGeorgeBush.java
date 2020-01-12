@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+
 @TeleOp(name = "GetGeorgeBush")
 public class GetGeorgeBush extends LinearOpMode {
 
@@ -32,6 +34,8 @@ public class GetGeorgeBush extends LinearOpMode {
 		servoBlock0 = hardwareMap.servo.get("hook");
 
 		MecanumControl mec = new MecanumControl(motorFL0, motorFR1, motorBL2, motorBR3, telemetry);
+
+		VuforiaControl vuf = new VuforiaControl();
 
 		waitForStart();
 

@@ -1,6 +1,7 @@
 package net.camfeezel.robotics;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -11,6 +12,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,19 +37,28 @@ public class VuforiaControl {
 	private static final float halfField = 72 * mmPerInch;
 	private static final float quadField  = 36 * mmPerInch;
 
+
+	private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
+	private static final String LABEL_FIRST_ELEMENT = "Stone";
+	private static final String LABEL_SECOND_ELEMENT = "Skystone";
+
 	private VuforiaLocalizer vuforia = null;
 
 	private List<VuforiaTrackable> allTrackables;
 	private VuforiaTrackables targetsSkyStone;
 
-	private Telemetry telemetry;
+	private TFObjectDetector tfod;
 
-	public VuforiaControl(Telemetry telemetry, WebcamName webcamName,
+	private Telemetry telemetry;
+	private HardwareMap hardwareMap;
+
+	public VuforiaControl(Telemetry telemetry, HardwareMap hardwareMap, WebcamName webcamName,
 						  int cameraMonitorViewId, final String VUFORIA_KEY,
 						  final float CAMERA_FORWARD_DISPLACEMENT, final float CAMERA_VERTICAL_DISPLACEMENT,
 						  final float CAMERA_LEFT_DISPLACEMENT, float phoneXRotate,
 						  float phoneYRotate, float phoneZRotate) {
 		this.telemetry = telemetry;
+		this.hardwareMap = hardwareMap;
 		VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 		parameters.vuforiaLicenseKey = VUFORIA_KEY;
 		parameters.cameraName = webcamName;
@@ -152,22 +164,67 @@ public class VuforiaControl {
 		}
 
 		targetsSkyStone.activate();
+
+		if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+			initTfod();
+		} else {
+			telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+		}
+
+		if(tfod != null) {
+			tfod.activate();
+		}
+	}
+
+	public void checkRecognitions() {
+		if (tfod != null) {
+			// getUpdatedRecognitions() will return null if no new information is available since
+			// the last time that call was made.
+			List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+			if (updatedRecognitions != null) {
+				telemetry.addData("# Object Detected", updatedRecognitions.size());
+
+				// step through the list of recognitions and display boundary info.
+				int i = 0;
+				for (Recognition recognition : updatedRecognitions) {
+					telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+					telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+							recognition.getLeft(), recognition.getTop());
+					telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+							recognition.getRight(), recognition.getBottom());
+
+				}
+				telemetry.update();
+			}
+		}
 	}
 
 	/**
 	 Only use if multiple re-activations
 	 */
 	public void activate() {
+
 		targetsSkyStone.activate();
+		if(tfod != null) tfod.activate();
 	}
 
 	public void deactivate() {
+
 		targetsSkyStone.deactivate();
+		if(tfod != null) tfod.shutdown();
 	}
 
 	public List<VuforiaTrackable> getAllTrackables() {
 		return allTrackables;
 	}
 
+	private void initTfod() {
+		int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+				"tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+		TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+		tfodParameters.minimumConfidence = 0.8;
+		tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+		tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+	}
 
 }
