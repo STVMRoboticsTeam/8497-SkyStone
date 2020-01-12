@@ -94,7 +94,7 @@ public class VuforiaTest2 extends LinearOpMode {
 		float cameraVertical = 8.0f;   // eg: Camera is 8 Inches above ground
 		float cameraLeft = 0;     // eg: Camera is ON the robot's center line
 
-		vuf = new VuforiaControl(telemetry, webcamName, cameraMonitorViewId, VUFORIA_KEY,
+		vuf = new VuforiaControl(telemetry, hardwareMap, VUFORIA_KEY,
 				cameraForward, cameraVertical, cameraLeft, phoneXRotate, phoneYRotate, phoneZRotate);
 
 

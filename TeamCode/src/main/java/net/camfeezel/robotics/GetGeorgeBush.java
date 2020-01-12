@@ -62,7 +62,7 @@ public class GetGeorgeBush extends LinearOpMode {
 		final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
 		final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
 
-		VuforiaControl vuf = new VuforiaControl(telemetry, hardwareMap, VUFORIA_KEY, CAMERA_FORWARD_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, 0, -90, 0);
+		VuforiaControl vuf = new VuforiaControl(telemetry, hardwareMap, VUFORIA_KEY, CAMERA_FORWARD_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, -90, -90, 0);
 
 		boolean autoMode = false;
 		int autoPhase = 0;
@@ -80,6 +80,10 @@ public class GetGeorgeBush extends LinearOpMode {
 		} else if(gamepad1.b) {
 			blueTeam = false;
 		}
+
+		telemetry.addLine("Team Selected: " + (blueTeam ? "Blue" : "Red"));
+		telemetry.addLine("Initialization Done. Ready for Start");
+		telemetry.update();
 
 		waitForStart();
 
@@ -104,13 +108,14 @@ public class GetGeorgeBush extends LinearOpMode {
 			float rt = gamepad2.right_trigger;
 			float ry2 = gamepad2.right_stick_y;
 
-			if(gamepad2.y) motorSlideLat.setPower(-lt);
-			if(gamepad2.a) motorSlideLat.setPower(rt);
-			if(ry2 > 0.05f) motorSlideVert.setPower(ry2/2);
-			else if(ry2 < -0.05f) motorSlideVert.setPower(ry2/2);
+			if(gamepad2.y) motorSlideLat.setPower(0.3f);
+			if(gamepad2.a) motorSlideLat.setPower(0.3f);
+			if(ry2 > 0.05f) motorSlideVert.setPower(ry2);
+			else if(ry2 < -0.05f) motorSlideVert.setPower(ry2);
 			else motorSlideVert.setPower(0f);
 			if(lt > 0.05f) servoBlock0.setPosition(1f);
 			else if(rt > 0.05f) servoBlock0.setPosition(-1f);
+
 
 			
 			
@@ -152,20 +157,22 @@ public class GetGeorgeBush extends LinearOpMode {
 						autoPhase = -1;
 						leds.setPattern(RevBlinkinLedDriver.BlinkinPattern.GOLD);
 						phaseTime.reset();
+					} else {
+						float angle = vuf.getAngle(rec);
+						if(rec.getHeight() / rec.getImageHeight() > 0.6f)
+							y = -0.4f;
+						else y = -1f;
+						x = 0;
+						rot = angle*2;
+						intL = (gamepad2.b ? 1 : -1);
+						intR = (1);
+						if(gamepad2.x) {
+							autoPhase = 1;
+							phaseTime.reset();
+							leds.setPattern(GREEN);
+						}
 					}
-					float angle = vuf.getAngle(rec);
-					if(rec.getHeight() / rec.getImageHeight() > 0.6f)
-						y = 0.4f;
-					else y = 1f;
-					x = 0;
-					rot = angle*2;
-					intL = (gamepad2.b ? 1 : -1);
-					intR = (1);
-					if(gamepad2.x) {
-						autoPhase = 1;
-						phaseTime.reset();
-						leds.setPattern(GREEN);
-					}
+
 				} else if(autoPhase == -1) {
 					if(phaseTime.seconds() >= 1) {
 						leds.setPattern(RAINBOW_RAINBOW_PALETTE);
