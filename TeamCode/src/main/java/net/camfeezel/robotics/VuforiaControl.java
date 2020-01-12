@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.Pif;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
@@ -52,16 +53,18 @@ public class VuforiaControl {
 	private Telemetry telemetry;
 	private HardwareMap hardwareMap;
 
-	public VuforiaControl(Telemetry telemetry, HardwareMap hardwareMap, WebcamName webcamName,
-						  int cameraMonitorViewId, final String VUFORIA_KEY,
+	public VuforiaControl(Telemetry telemetry, HardwareMap hardwareMap,
+						  final String VUFORIA_KEY,
 						  final float CAMERA_FORWARD_DISPLACEMENT, final float CAMERA_VERTICAL_DISPLACEMENT,
 						  final float CAMERA_LEFT_DISPLACEMENT, float phoneXRotate,
 						  float phoneYRotate, float phoneZRotate) {
 		this.telemetry = telemetry;
 		this.hardwareMap = hardwareMap;
+		int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
 		VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 		parameters.vuforiaLicenseKey = VUFORIA_KEY;
-		parameters.cameraName = webcamName;
+		parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
 
 		vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
@@ -176,26 +179,57 @@ public class VuforiaControl {
 		}
 	}
 
-	public void checkRecognitions() {
+	private Recognition curStone = null;
+
+	public Recognition findStone() {
 		if (tfod != null) {
 			// getUpdatedRecognitions() will return null if no new information is available since
 			// the last time that call was made.
 			List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 			if (updatedRecognitions != null) {
-				telemetry.addData("# Object Detected", updatedRecognitions.size());
 
 				// step through the list of recognitions and display boundary info.
 				int i = 0;
 				for (Recognition recognition : updatedRecognitions) {
-					telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-					telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-							recognition.getLeft(), recognition.getTop());
-					telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-							recognition.getRight(), recognition.getBottom());
-
+					curStone = recognition;
+					return recognition;
 				}
-				telemetry.update();
+			} else {
+				return curStone;
 			}
+		}
+		return null;
+	}
+
+	public void clearCurrentStone() {
+		curStone = null;
+	}
+
+	/**
+	 * Positive is turn to the right.
+	 * @param rec
+	 * @return
+	 */
+	public float getAngle(Recognition rec) {
+		float l = rec.getLeft();
+		float r = rec.getRight();
+		float hr = rec.getHeight() / rec.getImageHeight();
+		if(hr > 0.8) {
+			return 0;
+		}
+		float iw = rec.getImageWidth();
+		float w = rec.getWidth();
+		if(w / iw > 0.85) {
+			return 0;
+		}
+		float rem = iw - w;
+		float evenRatio = rem / 2.0f;
+		if(l > evenRatio && (r-evenRatio / evenRatio > 0.05f)) {
+			return ((l-evenRatio)/iw)*75f;
+		} else if(r > evenRatio && (r-evenRatio / evenRatio > 0.05f)) {
+			return ((r-evenRatio)/iw)*75f;
+		} else {
+			return 0;
 		}
 	}
 
