@@ -119,6 +119,14 @@ public class GetJFCanada extends LinearOpMode {
 			if(Math.abs(ly) > 0.05f) y = (float) Math.pow(ly, 3);
 			if(Math.abs(rx) > 0.05f) rot = rx*180;
 
+			// FIELD CENTRIC CORRECTIONS
+			float curHeading = (curAngle.secondAngle + 360) % 360;
+			float angleDiff = curHeading - startHeading;
+			angleDiff += 90;
+
+			x = (float) cos(toRadians(angleDiff));
+			y = (float) sin(toRadians(angleDiff));
+
 
 			float lt = gamepad2.left_trigger;
 			float rt = gamepad2.right_trigger;
@@ -200,15 +208,6 @@ public class GetJFCanada extends LinearOpMode {
 
 				}
 			}
-
-
-			// FIELD CENTRIC CORRECTIONS
-			float curHeading = (curAngle.secondAngle + 360) % 360;
-			float angleDiff = curHeading - startHeading;
-			angleDiff += 90;
-
-			x = (float) cos(toRadians(angleDiff));
-			y = (float) sin(toRadians(angleDiff));
 
 			motorIntakeL.setPower(intL);
 			motorIntakeR.setPower(intR);

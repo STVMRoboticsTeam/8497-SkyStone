@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
@@ -30,6 +31,8 @@ public class GetJacksonsBeans extends LinearOpMode {
 	private DcMotor motorFR1;
 	private DcMotor motorBL2;
 	private DcMotor motorBR3;
+
+	private TouchSensor touchSensor;
 
 	private DcMotor motorIntakeL;
 	private DcMotor motorIntakeR;
@@ -59,6 +62,8 @@ public class GetJacksonsBeans extends LinearOpMode {
 
 		motorIntakeL = hardwareMap.dcMotor.get("intakeL");
 		motorIntakeR = hardwareMap.dcMotor.get("intakeR");
+
+		touchSensor = hardwareMap.touchSensor.get("touch");
 
 		colorDown = hardwareMap.get(RevColorSensorV3.class, "colorDown");
 
@@ -156,18 +161,42 @@ public class GetJacksonsBeans extends LinearOpMode {
 		} else if(gamepad1.y) {
 			parkOnWall = false;
 		}
+		telemetry.clear();
+		telemetry.addLine("Park on Lane " + (parkOnWall ? "Wall" : "Center"));
+		telemetry.update();
+
+		while(parkOnWall ? gamepad1.a : gamepad1.y) {
+
+		}
+
+		telemetry.addLine("Move Platform: (A)Yes (B)No");
+		telemetry.update();
+
+		boolean movePlatform = true;
+
+
+		while(!(gamepad1.a || gamepad1.b) && !isStopRequested()) {
+
+		}
+
+		if(gamepad1.a) {
+			movePlatform = true;
+		} else if(gamepad1.b) {
+			movePlatform = false;
+		}
 
 		telemetry.clear();
 		telemetry.addLine((blueTeam ? "Blue" : "Red") + " Team");
 		telemetry.addLine("Line on " + (left ? "Left" : "Right"));
 		telemetry.addLine((wallLane ? "Wall" : "Center") + " Lane");
 		telemetry.addLine("Park in " + (wallLane ? "Wall" : "Center") + " Lane");
+		telemetry.addLine((movePlatform ? "WILL" : "NOT") + " Move Foundation");
 		telemetry.addLine("Initialization Done. Ready for Start");
 		telemetry.update();
 
 		colorDown.enableLed(true);
 		waitForStart();
-
+		phaseTime.reset();
 		while(opModeIsActive()) {
 
 			float x = 0;
@@ -177,7 +206,42 @@ public class GetJacksonsBeans extends LinearOpMode {
 			float intL = 0;
 			float intR = 0;
 
+				if(autoPhase == 0) {
+					if(phaseTime.milliseconds() > 15000) {
+						autoPhase = 7; // TODO phase that parks
+					}
+					Recognition rec = vuf.findStone();
+					if(rec == null) {
+						telemetry.addLine("NO BLOCK FOUND");
+						telemetry.update();
+						leds.setPattern(RevBlinkinLedDriver.BlinkinPattern.GOLD);
+					} else {
+						float angle = vuf.getAngle(rec);
+						if(rec.getHeight() / rec.getImageHeight() > 0.6f)
+							y = -0.4f;
+						else y = -1f;
+						x = 0;
+						rot = angle*2;
+						// TODO reverse L using distance sensors
+						intL = (1);
+						intR = (1);
+						if() {
+							autoPhase = 1;
+							phaseTime.reset();
+							leds.setPattern(GREEN);
+						}
+					}
 
+				} else if(autoPhase == -1) {
+					if(phaseTime.seconds() >= 1) {
+						leds.setPattern(RAINBOW_RAINBOW_PALETTE);
+					}
+				} else if(autoPhase == 1) {
+					if(phaseTime.seconds() >= 1) {
+						leds.setPattern(RAINBOW_RAINBOW_PALETTE);
+					}
+
+				}
 				if(autoPhase == 0) {
 					if(!wallLane) {
 						if(left) x = -0.7f;
