@@ -115,6 +115,9 @@ public class GetJFCanada extends LinearOpMode {
 			float intL = 0;
 			float intR = 0;
 
+			float jy = 0;
+			float jx = 0;
+
 			if(Math.abs(lx) > 0.05f) x = (float) Math.pow(lx, 3);
 			if(Math.abs(ly) > 0.05f) y = (float) Math.pow(ly, 3);
 			if(Math.abs(rx) > 0.05f) rot = rx*180;
@@ -124,8 +127,10 @@ public class GetJFCanada extends LinearOpMode {
 			float angleDiff = curHeading - startHeading;
 			angleDiff += 90;
 
-			x = (float) cos(toRadians(angleDiff));
-			y = (float) sin(toRadians(angleDiff));
+			double rad = toRadians(angleDiff);
+
+			y = max(-1, min(1, (float)( (cos(rad)*jy) + (sin(rad)*jx))));
+			x = max(-1, min(1, (float)( (sin(rad)*jy) + (cos(rad)*jx))));
 
 
 			float lt = gamepad2.left_trigger;
