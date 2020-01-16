@@ -181,7 +181,7 @@ public class VuforiaControl {
 
 	private Recognition curStone = null;
 
-	public Recognition findStone() {
+	public Recognition findStone(boolean skystone) {
 		if (tfod != null) {
 			// getUpdatedRecognitions() will return null if no new information is available since
 			// the last time that call was made.
@@ -190,6 +190,14 @@ public class VuforiaControl {
 
 				// step through the list of recognitions and display boundary info.
 				int i = 0;
+				for (Recognition recognition : updatedRecognitions) {
+					if(skystone && !recognition.getLabel().equalsIgnoreCase("SkyStone")) {
+						continue;
+					} else {
+						curStone = recognition;
+						return recognition;
+					}
+				}
 				for (Recognition recognition : updatedRecognitions) {
 					curStone = recognition;
 					return recognition;

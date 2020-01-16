@@ -125,7 +125,6 @@ public class GetJFCanada extends LinearOpMode {
 			// FIELD CENTRIC CORRECTIONS
 			float curHeading = (curAngle.secondAngle + 360) % 360;
 			float angleDiff = curHeading - startHeading;
-			angleDiff += 90;
 
 			double rad = toRadians(angleDiff);
 
