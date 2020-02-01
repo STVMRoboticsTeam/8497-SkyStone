@@ -56,6 +56,9 @@ public class GetGeorgeBush extends LinearOpMode {
 		motorSlideVert = hardwareMap.dcMotor.get("slideVert");
 		servoBlock0 = hardwareMap.servo.get("hook");
 
+		motorSlideLat.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		motorSlideVert.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
 		MecanumControl mec = new MecanumControl(motorFL0, motorFR1, motorBL2, motorBR3, telemetry);
 
 		final float CAMERA_FORWARD_DISPLACEMENT  = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
@@ -68,24 +71,17 @@ public class GetGeorgeBush extends LinearOpMode {
 		int autoPhase = 0;
 		ElapsedTime phaseTime = new ElapsedTime();
 		telemetry.clear();
-		telemetry.addLine("Press Team Color on 1");
-		telemetry.update();
 
-		while(!(gamepad1.x || gamepad1.b) && !isStopRequested()) {
-
-		}
-
-		if(gamepad1.x) {
-			blueTeam = true;
-		} else if(gamepad1.b) {
-			blueTeam = false;
-		}
+		blueTeam = true;
 
 		telemetry.addLine("Team Selected: " + (blueTeam ? "Blue" : "Red"));
 		telemetry.addLine("Initialization Done. Ready for Start");
 		telemetry.update();
 
 		waitForStart();
+
+		motorSlideVert.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		motorSlideLat.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 		while(opModeIsActive()) {
 			float lx = gamepad1.left_stick_x;
@@ -108,13 +104,47 @@ public class GetGeorgeBush extends LinearOpMode {
 			float rt = gamepad2.right_trigger;
 			float ry2 = gamepad2.right_stick_y;
 
-			if(gamepad2.y) motorSlideLat.setPower(0.3f);
-			if(gamepad2.a) motorSlideLat.setPower(0.3f);
-			if(ry2 > 0.05f) motorSlideVert.setPower(ry2);
-			else if(ry2 < -0.05f) motorSlideVert.setPower(ry2);
-			else motorSlideVert.setPower(0f);
-			if(lt > 0.05f) servoBlock0.setPosition(1f);
-			else if(rt > 0.05f) servoBlock0.setPosition(-1f);
+			final long encoderLimitLat = 2800;
+			final long encoderLimitVert = -5000;
+			telemetry.addLine()
+					.addData("VertEnc", motorSlideVert.getCurrentPosition())
+					.addData("LatEnc", motorSlideLat.getCurrentPosition());
+			telemetry.addLine()
+					.addData("intakeREnc", motorIntakeR.getCurrentPosition())
+					.addData("intakeLEnc", motorIntakeL.getCurrentPosition());
+			telemetry.addLine()
+					.addData("fl", motorFL0.getCurrentPosition())
+					.addData("fr", motorFR1.getCurrentPosition());
+			telemetry.addLine()
+					.addData("bl", motorBL2.getCurrentPosition())
+					.addData("br", motorBR3.getCurrentPosition());
+
+			if(gamepad2.y) {
+				if (motorSlideLat.getCurrentPosition() < encoderLimitLat || gamepad1.dpad_down)
+					motorSlideLat.setPower(0.3f);
+				else
+					motorSlideLat.setPower(0);
+			} else if(gamepad2.a) {
+				if(motorSlideLat.getCurrentPosition() > 0 || gamepad1.dpad_down)
+					motorSlideLat.setPower(-0.3f);
+				else
+					motorSlideLat.setPower(0);
+			} else motorSlideLat.setPower(0);
+
+			if(ry2 > 0.05f) {
+				if(motorSlideVert.getCurrentPosition() > encoderLimitVert || gamepad1.dpad_down)
+					motorSlideVert.setPower(-ry2);
+				else
+					motorSlideVert.setPower(0);
+			} else if(ry2 < -0.05f) {
+				if(motorSlideVert.getCurrentPosition() < 0 || gamepad1.dpad_down)
+					motorSlideVert.setPower(-ry2);
+				else
+					motorSlideVert.setPower(0);
+			} else motorSlideVert.setPower(0f);
+
+			if(lt > 0.05f) servoBlock0.setPosition(0.9f);
+			else if(rt > 0.05f) servoBlock0.setPosition(0.3f);
 
 
 			

@@ -225,7 +225,7 @@ public class GetJacksonsBeans extends LinearOpMode {
 						// TODO reverse L using distance sensors
 						intL = (1);
 						intR = (1);
-						if() {
+						if(true) {
 							autoPhase = 1;
 							phaseTime.reset();
 							leds.setPattern(GREEN);
