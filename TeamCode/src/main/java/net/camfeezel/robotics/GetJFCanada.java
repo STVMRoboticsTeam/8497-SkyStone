@@ -3,7 +3,6 @@ package net.camfeezel.robotics;
 import android.graphics.drawable.GradientDrawable;
 
 import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -39,7 +38,7 @@ public class GetJFCanada extends LinearOpMode {
 
 	private RevBlinkinLedDriver leds;
 
-	private BNO055IMU imu;
+	private AdafruitBNO055IMU imu;
 
 	// Negative: Out
 	private DcMotor motorSlideLat;
@@ -61,7 +60,7 @@ public class GetJFCanada extends LinearOpMode {
 		motorBL2 = hardwareMap.dcMotor.get("2");
 		motorBR3 = hardwareMap.dcMotor.get("3");
 
-		imu = hardwareMap.get(BNO055IMU.class, "imu");
+		imu = hardwareMap.get(AdafruitBNO055IMU.class, "imu");
 
 		motorIntakeL = hardwareMap.dcMotor.get("intakeL");
 		motorIntakeR = hardwareMap.dcMotor.get("intakeR");
@@ -87,14 +86,6 @@ public class GetJFCanada extends LinearOpMode {
 		telemetry.addLine("Blue Team Selected");
 		telemetry.addLine("Calibrating Gyro...");
 		telemetry.update();
-
-		BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-		parameters.mode                = BNO055IMU.SensorMode.IMU;
-		parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-		parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-		parameters.loggingEnabled      = false;
-
-		imu.initialize(parameters);
 
 		while(!isStopRequested() && !imu.isGyroCalibrated()) {
 
@@ -133,12 +124,10 @@ public class GetJFCanada extends LinearOpMode {
 			float angleDiff = curHeading - startHeading;
 			angleDiff += 90;
 
-			x = (float) cos(toRadians(angleDiff)) * y;
-			y = (float) sin(toRadians(angleDiff)) * y;
+			double rad = toRadians(angleDiff);
 
-
-			x *= (float) cos(toRadians(angleDiff)) * x;
-			y *= (float) sin(toRadians(angleDiff)) * x;
+			y = max(-1, min(1, (float)( (cos(rad)*jy) + (sin(rad)*jx))));
+			x = max(-1, min(1, (float)( (sin(rad)*jy) + (cos(rad)*jx))));
 
 
 			float lt = gamepad2.left_trigger;

@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.BLUE;
+import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.BLUE_VIOLET;
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.GREEN;
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.LIME;
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE;
@@ -210,8 +211,9 @@ public class GetJacksonsBeans extends LinearOpMode {
 					if(phaseTime.milliseconds() > 15000) {
 						autoPhase = 7; // TODO phase that parks
 					}
-					Recognition rec = vuf.findStone();
+					Recognition rec = vuf.findStone(true);
 					if(rec == null) {
+						telemetry.clear();
 						telemetry.addLine("NO BLOCK FOUND");
 						telemetry.update();
 						leds.setPattern(RevBlinkinLedDriver.BlinkinPattern.GOLD);
@@ -225,11 +227,16 @@ public class GetJacksonsBeans extends LinearOpMode {
 						// TODO reverse L using distance sensors
 						intL = (1);
 						intR = (1);
-						if(true) {
-							autoPhase = 1;
-							phaseTime.reset();
-							leds.setPattern(GREEN);
-						}
+					}
+					if(touchSensor.isPressed()) {
+						autoPhase = 1;
+						x = 0;
+						y = 0;
+						rot = 0;
+						intL = 0;
+						intR = 0;
+						phaseTime.reset();
+						leds.setPattern(GREEN);
 					}
 
 				} else if(autoPhase == -1) {
@@ -237,12 +244,18 @@ public class GetJacksonsBeans extends LinearOpMode {
 						leds.setPattern(RAINBOW_RAINBOW_PALETTE);
 					}
 				} else if(autoPhase == 1) {
-					if(phaseTime.seconds() >= 1) {
+					if(phaseTime.milliseconds() >= 500) {
+						autoPhase = 2;
+						phaseTime.reset();
 						leds.setPattern(RAINBOW_RAINBOW_PALETTE);
 					}
+					x = 0;
+					y = 0;
 
-				}
-				if(autoPhase == 0) {
+					// TODO grab bloke
+				} else if(autoPhase == 2) {
+					
+				} else if(autoPhase == 2) {
 					if(!wallLane) {
 						if(left) x = -0.7f;
 						else x = 0.7f;

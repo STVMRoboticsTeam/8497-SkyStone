@@ -180,7 +180,7 @@ public class GetGeorgeBush extends LinearOpMode {
 
 			if(autoMode) {
 				if(autoPhase == 0) {
-					Recognition rec = vuf.findStone();
+					Recognition rec = vuf.findStone(false);
 					if(rec == null) {
 						telemetry.addLine("NO BLOCK FOUND");
 						telemetry.update();
