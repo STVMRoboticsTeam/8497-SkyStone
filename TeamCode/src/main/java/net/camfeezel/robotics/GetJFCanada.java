@@ -3,6 +3,7 @@ package net.camfeezel.robotics;
 import android.graphics.drawable.GradientDrawable;
 
 import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -38,7 +39,7 @@ public class GetJFCanada extends LinearOpMode {
 
 	private RevBlinkinLedDriver leds;
 
-	private AdafruitBNO055IMU imu;
+	private BNO055IMU imu;
 
 	// Negative: Out
 	private DcMotor motorSlideLat;
@@ -87,6 +88,11 @@ public class GetJFCanada extends LinearOpMode {
 		telemetry.addLine("Calibrating Gyro...");
 		telemetry.update();
 
+		BNO055IMU.Parameters param = new BNO055IMU.Parameters();
+
+
+		imu.initialize(param);
+
 		while(!isStopRequested() && !imu.isGyroCalibrated()) {
 
 		}
@@ -124,10 +130,8 @@ public class GetJFCanada extends LinearOpMode {
 			float angleDiff = curHeading - startHeading;
 			angleDiff += 90;
 
-			double rad = toRadians(angleDiff);
-
-			y = max(-1, min(1, (float)( (cos(rad)*jy) + (sin(rad)*jx))));
-			x = max(-1, min(1, (float)( (sin(rad)*jy) + (cos(rad)*jx))));
+			x = (float) cos(toRadians(angleDiff));
+			y = (float) sin(toRadians(angleDiff));
 
 
 			float lt = gamepad2.left_trigger;
@@ -176,7 +180,7 @@ public class GetJFCanada extends LinearOpMode {
 
 			if(autoMode) {
 				if(autoPhase == 0) {
-					Recognition rec = vuf.findStone();
+					Recognition rec = vuf.findStone(false);
 					if(rec == null) {
 						telemetry.addLine("NO BLOCK FOUND");
 						telemetry.update();

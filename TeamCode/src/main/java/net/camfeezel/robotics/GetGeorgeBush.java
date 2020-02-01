@@ -113,32 +113,28 @@ public class GetGeorgeBush extends LinearOpMode {
 					.addData("intakeREnc", motorIntakeR.getCurrentPosition())
 					.addData("intakeLEnc", motorIntakeL.getCurrentPosition());
 			telemetry.addLine()
-					.addData("fl", motorFL0.getCurrentPosition())
-					.addData("fr", motorFR1.getCurrentPosition());
-			telemetry.addLine()
-					.addData("bl", motorBL2.getCurrentPosition())
-					.addData("br", motorBR3.getCurrentPosition());
+					.addData("ry2", ry2);
 
 			if(gamepad2.y) {
 				if (motorSlideLat.getCurrentPosition() < encoderLimitLat || gamepad1.dpad_down)
-					motorSlideLat.setPower(0.3f);
+					motorSlideLat.setPower(1f);
 				else
 					motorSlideLat.setPower(0);
 			} else if(gamepad2.a) {
 				if(motorSlideLat.getCurrentPosition() > 0 || gamepad1.dpad_down)
-					motorSlideLat.setPower(-0.3f);
+					motorSlideLat.setPower(-1f);
 				else
 					motorSlideLat.setPower(0);
 			} else motorSlideLat.setPower(0);
 
 			if(ry2 > 0.05f) {
 				if(motorSlideVert.getCurrentPosition() > encoderLimitVert || gamepad1.dpad_down)
-					motorSlideVert.setPower(-ry2);
+					motorSlideVert.setPower(-0.6f);
 				else
 					motorSlideVert.setPower(0);
 			} else if(ry2 < -0.05f) {
 				if(motorSlideVert.getCurrentPosition() < 0 || gamepad1.dpad_down)
-					motorSlideVert.setPower(-ry2);
+					motorSlideVert.setPower(0.6f);
 				else
 					motorSlideVert.setPower(0);
 			} else motorSlideVert.setPower(0f);
@@ -215,6 +211,7 @@ public class GetGeorgeBush extends LinearOpMode {
 				}
 			}
 
+			telemetry.update();
 			motorIntakeL.setPower(intL);
 			motorIntakeR.setPower(intR);
 			mec.setVelocity(x, y, rot);
